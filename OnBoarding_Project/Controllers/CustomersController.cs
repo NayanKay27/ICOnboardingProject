@@ -47,28 +47,37 @@ namespace OnBoarding_Project.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCustomer(int id, Customer customer)
         {
-            if (id != customer.Id)
+            if(ModelState.IsValid)
             {
-                return BadRequest();
-            }
-
-            _context.Entry(customer).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CustomerExists(id))
+                if (id != customer.Id)
                 {
-                    return NotFound();
+                    return BadRequest();
                 }
-                else
+
+                _context.Entry(customer).State = EntityState.Modified;
+
+                try
                 {
-                    throw;
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!CustomerExists(id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
             }
+            else
+            {
+                var state = ModelState;
+
+            }
+            
 
             return NoContent();
         }
@@ -79,8 +88,15 @@ namespace OnBoarding_Project.Controllers
         [HttpPost]
         public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
-            _context.Customer.Add(customer);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Customer.Add(customer);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException) {
+                return Conflict();
+            }
+
 
             return CreatedAtAction("GetCustomer", new { id = customer.Id }, customer);
         }
@@ -96,10 +112,16 @@ namespace OnBoarding_Project.Controllers
                 return NotFound();
             }
 
-            _context.Customer.Remove(customer);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Customer.Remove(customer);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            { return Conflict(); } 
 
             return customer;
+
         }
 
         private bool CustomerExists(int id)
