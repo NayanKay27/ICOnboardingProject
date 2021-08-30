@@ -20,7 +20,7 @@ namespace OnBoarding_Project.Models
         {
         }
 
-        public virtual DbSet<Customer> Customer { get; set; }
+        
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -52,6 +52,8 @@ namespace OnBoarding_Project.Models
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+        public virtual DbSet<Customer> Customer { get; set; }
 
         public DbSet<OnBoarding_Project.Models.Product> Product { get; set; }
 

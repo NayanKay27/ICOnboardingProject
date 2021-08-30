@@ -72,11 +72,11 @@ namespace OnBoarding_Project.Controllers
                     }
                 }
             }
-            else
-            {
-                var state = ModelState;
+            //else
+            //{
+            //    var state = ModelState;
 
-            }
+            //}
             
 
             return NoContent();
@@ -88,16 +88,19 @@ namespace OnBoarding_Project.Controllers
         [HttpPost]
         public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
-            try
+            if (ModelState.IsValid)
             {
-                _context.Customer.Add(customer);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.Customer.Add(customer);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    return Conflict();
+                }
             }
-            catch (DbUpdateException) {
-                return Conflict();
-            }
-
-
+            
             return CreatedAtAction("GetCustomer", new { id = customer.Id }, customer);
         }
 

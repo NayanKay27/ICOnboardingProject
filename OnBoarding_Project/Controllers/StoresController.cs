@@ -47,28 +47,32 @@ namespace OnBoarding_Project.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStore(int id, Store store)
         {
-            if (id != store.Id)
+            if(ModelState.IsValid)
             {
-                return BadRequest();
-            }
-
-            _context.Entry(store).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!StoreExists(id))
+                if (id != store.Id)
                 {
-                    return NotFound();
+                    return BadRequest();
                 }
-                else
+
+                _context.Entry(store).State = EntityState.Modified;
+
+                try
                 {
-                    throw;
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!StoreExists(id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
             }
+            
 
             return NoContent();
         }
@@ -79,9 +83,19 @@ namespace OnBoarding_Project.Controllers
         [HttpPost]
         public async Task<ActionResult<Store>> PostStore(Store store)
         {
-            _context.Store.Add(store);
-            await _context.SaveChangesAsync();
-
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Store.Add(store);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    return Conflict();
+                }
+            }
+            
             return CreatedAtAction("GetStore", new { id = store.Id }, store);
         }
 
@@ -95,8 +109,14 @@ namespace OnBoarding_Project.Controllers
                 return NotFound();
             }
 
-            _context.Store.Remove(store);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Store.Remove(store);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            { return Conflict(); }
+
 
             return store;
         }
